@@ -16,6 +16,20 @@ else
   SMP_CORES=1
 fi
 
+# Locate ISO inside /iso
+if [ ! -f "/iso/os.iso" ]; then
+  for f in /iso/*.iso; do
+    if [ -f "$f" ]; then
+      echo "Found ISO $f, linking to /iso/os.iso"
+      mv "$f" /iso/os.iso
+      break
+    fi
+  done
+fi
+
+echo "ISO file check inside container:"
+ls -lh /iso/
+
 # Create disk image if not exists
 if [ ! -f "/data/disk.qcow2" ]; then
   echo "💽 Creating 100GB virtual disk..."
