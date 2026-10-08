@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Fix docker root permissions
+sudo chown -R $USER:$USER ./iso ./data 2>/dev/null || true
+sudo chmod -R 777 ./iso ./data 2>/dev/null || true
 mkdir -p ./iso ./data
 
 ISO_URL="https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2010%20Lite%20Edition%2019H2%20x64.iso"
@@ -9,14 +12,14 @@ ISO_URL="https://archive.org/download/windows-10-lite-edition-19h2-x64/Windows%2
 ISO_SIZE=$(stat -c%s "./iso/os.iso" 2>/dev/null || echo 0)
 if [ "$ISO_SIZE" -lt 1000000000 ]; then
   echo "📥 Downloading Windows 10 Lite ISO (1.2GB)..."
-  rm -f ./iso/os.iso
+  sudo rm -f ./iso/os.iso
   curl -L -A "Mozilla/5.0" --progress-bar -o "./iso/os.iso" "$ISO_URL"
   echo "✅ ISO download complete!"
 else
   echo "✅ Windows ISO already downloaded!"
 fi
 
-echo "Stopping existing container..."
+echo "Stopping any existing container..."
 docker compose down || true
 
 echo "Starting Windows 10 VM..."
