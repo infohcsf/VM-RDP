@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+# Start noVNC immediately so browser can always connect
+websockify --web /novnc 6080 localhost:5900 &
+
+echo "⏳ Waiting for ISO to be loaded into /iso/os.iso..."
+while [ ! -f "/iso/ready" ] && [ ! -s "/iso/os.iso" ]; do
+  sleep 1
+done
+
+echo "✅ ISO confirmed: $(ls -lh /iso/os.iso)"
+
 # Check for KVM support
 if [ -e /dev/kvm ]; then
   echo "✅ KVM acceleration available"
@@ -15,20 +25,6 @@ else
   MEMORY="2G"
   SMP_CORES=1
 fi
-
-# Locate ISO inside /iso
-if [ ! -f "/iso/os.iso" ]; then
-  for f in /iso/*.iso; do
-    if [ -f "$f" ]; then
-      echo "Found ISO $f, linking to /iso/os.iso"
-      mv "$f" /iso/os.iso
-      break
-    fi
-  done
-fi
-
-echo "ISO file check inside container:"
-ls -lh /iso/
 
 # Create disk image if not exists
 if [ ! -f "/data/disk.qcow2" ]; then
@@ -52,15 +48,6 @@ qemu-system-x86_64 \
   -netdev user,id=net0,hostfwd=tcp::3389-:3389 \
   -device e1000,netdev=net0 \
   -display vnc=:0 \
-  -name "Windows10_VM" &
-
-# Start noVNC
-sleep 3
-websockify --web /novnc 6080 localhost:5900 &
-
-echo "===================================================="
-echo "🌐 Connect via VNC: http://localhost:6080"
-echo "🔌 After install, use RDP: localhost:3389"
-echo "===================================================="
+  -name "Windows10_VM"
 
 tail -f /dev/null
