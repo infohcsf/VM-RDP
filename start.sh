@@ -16,14 +16,6 @@ else
   SMP_CORES=1
 fi
 
-# Fallback download inside container if host didn't download
-ISO_SIZE=$(stat -c%s "/iso/os.iso" 2>/dev/null || echo 0)
-if [ "$ISO_SIZE" -lt 1000000000 ]; then
-  echo "📥 Downloading Windows 10 ISO inside container..."
-  rm -f /iso/os.iso
-  curl -L -A "Mozilla/5.0" --progress-bar -o "/iso/os.iso" "$ISO_URL"
-fi
-
 # Create disk image if not exists
 if [ ! -f "/data/disk.qcow2" ]; then
   echo "💽 Creating 100GB virtual disk..."
