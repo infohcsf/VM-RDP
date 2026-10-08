@@ -1,9 +1,9 @@
 {
   "name": "Windows 10 VM",
-  "forwardPorts": [8006, 3389],
+  "forwardPorts": [6080, 3389],
   "portsAttributes": {
-    "8006": {
-      "label": "Windows 10 Desktop",
+    "6080": {
+      "label": "Windows Desktop (noVNC)",
       "onAutoForward": "openBrowser",
       "visibility": "public"
     },
@@ -12,5 +12,5 @@
       "visibility": "public"
     }
   },
-  "postStartCommand": "docker compose up -d"
+  "postStartCommand": "docker compose up -d --build"
 }
