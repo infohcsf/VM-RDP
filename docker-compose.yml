@@ -2,6 +2,7 @@ services:
   windows:
     image: dockurr/windows
     container_name: windows10
+    network_mode: host
     environment:
       VERSION: "10"
       RAM_SIZE: "4G"
@@ -10,9 +11,6 @@ services:
       - /dev/kvm
     cap_add:
       - NET_ADMIN
-    ports:
-      - "8006:8006"
-      - "3389:3389"
     volumes:
       - ./data:/storage
     stop_grace_period: 2m
