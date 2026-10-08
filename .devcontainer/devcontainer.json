@@ -1,0 +1,16 @@
+{
+  "name": "Windows 10 VM",
+  "forwardPorts": [8006, 3389],
+  "portsAttributes": {
+    "8006": {
+      "label": "Windows 10 Desktop",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    },
+    "3389": {
+      "label": "RDP Port",
+      "visibility": "public"
+    }
+  },
+  "postStartCommand": "docker compose up -d"
+}
