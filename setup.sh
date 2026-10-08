@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
-echo "Building and starting Windows 10 VM..."
+echo "Stopping any existing container..."
+docker compose down || true
+echo "Rebuilding and starting Windows 10 VM with fixed boot..."
 docker compose up -d --build
-echo "Done! Windows 10 is running on port 6080 (noVNC)!"
+echo "Done! Running 'docker logs -f windows10' so you can see live progress:"
+docker logs -f windows10
