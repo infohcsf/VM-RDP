@@ -16,10 +16,10 @@ else
   SMP_CORES=1
 fi
 
-# Ensure full 1.2GB ISO is present
+# Fallback download inside container if host didn't download
 ISO_SIZE=$(stat -c%s "/iso/os.iso" 2>/dev/null || echo 0)
 if [ "$ISO_SIZE" -lt 1000000000 ]; then
-  echo "📥 Downloading Windows 10 ISO (1.2GB)..."
+  echo "📥 Downloading Windows 10 ISO inside container..."
   rm -f /iso/os.iso
   curl -L -A "Mozilla/5.0" --progress-bar -o "/iso/os.iso" "$ISO_URL"
 fi
@@ -32,7 +32,7 @@ fi
 
 echo "⚙️ Starting Windows 10 VM with ${SMP_CORES} CPU cores and ${MEMORY} RAM"
 
-# Start QEMU with standard PC machine and guaranteed CD boot (-cdrom and -boot d)
+# Start QEMU with guaranteed CD-ROM boot
 qemu-system-x86_64 \
   $KVM_ARG \
   -cpu $CPU_ARG \
