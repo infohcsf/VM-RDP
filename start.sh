@@ -11,7 +11,25 @@ done
 
 echo "✅ ISO confirmed: $(ls -lh /iso/os.iso)"
 
-# Windows-optimized KVM & CPU flags to prevent winload.exe 0xc0000225 error
+# Patch BOOTFIX.BIN in-place so Windows skips "Press any key" and boots directly into setup
+python3 -c '
+with open("/iso/os.iso", "r+b") as f:
+    f.seek(722879)
+    chunk = f.read(11)
+    if chunk == b"BOOTFIX.BIN":
+        f.seek(722879)
+        f.write(b"NOBTFIX.BIN")
+        print("✅ Patched BOOTFIX.BIN: Windows will auto-boot without prompt!")
+    else:
+        print("BOOTFIX.BIN status:", chunk)
+' || true
+
+# Fresh clean 100GB disk image so no corrupted recovery BCD boots
+rm -f /data/disk.qcow2
+echo "💽 Creating fresh 100GB virtual disk..."
+qemu-img create -f qcow2 "/data/disk.qcow2" 100G
+
+# Windows-optimized KVM & CPU flags
 if [ -e /dev/kvm ]; then
   echo "✅ KVM acceleration available"
   KVM_ARG="-enable-kvm"
@@ -26,14 +44,9 @@ else
   SMP_CORES=1
 fi
 
-if [ ! -f "/data/disk.qcow2" ]; then
-  echo "💽 Creating 100GB virtual disk..."
-  qemu-img create -f qcow2 "/data/disk.qcow2" 100G
-fi
-
 echo "⚙️ Starting Windows 10 VM with ${SMP_CORES} CPU cores and ${MEMORY} RAM"
 
-# Start QEMU on Q35 PCIe machine with explicit ide-cd and ide-hd buses
+# Start QEMU directly booting from CD-ROM
 qemu-system-x86_64 \
   $KVM_ARG \
   -machine q35,accel=kvm:tcg \
@@ -42,11 +55,9 @@ qemu-system-x86_64 \
   -smp $SMP_CORES \
   -vga std \
   -usb -device usb-tablet \
-  -boot d \
-  -device ide-cd,bus=ide.0,drive=cdrom \
-  -drive file=/iso/os.iso,if=none,id=cdrom,media=cdrom \
-  -device ide-hd,bus=ide.1,drive=harddisk \
-  -drive file=/data/disk.qcow2,if=none,id=harddisk,format=qcow2 \
+  -boot order=d,menu=off \
+  -cdrom /iso/os.iso \
+  -drive file=/data/disk.qcow2,format=qcow2,if=ide \
   -netdev user,id=net0,hostfwd=tcp::3389-:3389 \
   -device e1000,netdev=net0 \
   -display vnc=:0 \
