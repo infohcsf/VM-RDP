@@ -9,14 +9,11 @@ services:
       - /dev/kvm
     cap_add:
       - NET_ADMIN
-    dns:
-      - 168.63.129.16
-      - 1.1.1.1
     environment:
-      - VERSION=10
-      - RAM_SIZE=4G
-      - CPU_CORES=2
-      - DISK_SIZE=25G
+      VERSION: "tiny10"
+      RAM_SIZE: "4G"
+      CPU_CORES: "2"
+      DISK_SIZE: "16G"
     volumes:
       - ./data:/storage
     stop_grace_period: 2m
