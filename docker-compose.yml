@@ -10,10 +10,10 @@ services:
     cap_add:
       - NET_ADMIN
     environment:
-      VERSION: "tiny10"
+      VERSION: "ltsc10"
       RAM_SIZE: "4G"
       CPU_CORES: "2"
-      DISK_SIZE: "16G"
+      DISK_SIZE: "14G"
       DISK_FMT: "qcow2"
       ALLOCATE: "N"
     volumes:
