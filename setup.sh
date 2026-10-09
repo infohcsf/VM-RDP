@@ -2,37 +2,33 @@
 set -e
 
 echo "=========================================================="
-echo "Starting Windows Desktop Setup - Tiny10"
+echo "Starting Windows 10 (Tiny10) Automated Setup"
 echo "=========================================================="
 
 echo "1. Stopping any old containers..."
 docker compose down || true
 
-echo "2. Configuring Docker DNS for Azure GitHub Codespaces..."
-sudo mkdir -p /etc/docker
-cat << 'EOF' | sudo tee /etc/docker/daemon.json >/dev/null
-{
-  "dns": ["168.63.129.16", "1.1.1.1", "8.8.8.8"]
-}
-EOF
-sudo systemctl restart docker 2>/dev/null || sudo service docker restart 2>/dev/null || true
-sleep 3
-
-echo "3. Freeing up workspace space..."
-docker system prune -f 2>/dev/null || true
+echo "2. Ensuring storage directory exists..."
 mkdir -p ./data
 
-echo "4. Current available disk space:"
+echo "3. Downloading Tiny10 ISO directly on host (high-speed gigabit)..."
+# Dockurr looks for /storage/tiny10.iso. Downloading it here completely bypasses container DNS issues.
+if [ ! -s ./data/tiny10.iso ] || [ $(wc -c < ./data/tiny10.iso 2>/dev/null || echo 0) -lt 3000000000 ]; then
+  echo "Downloading Tiny10 ISO (~3.8 GB) with resume support..."
+  curl -L --retry 5 --retry-delay 2 -C -     "https://ia600508.us.archive.org/13/items/tiny-10-23-h2/tiny10%20x64%2023h2.iso"     -o ./data/tiny10.iso ||   curl -L --retry 5 --retry-delay 2 -C -     "https://archive.org/download/tiny-10-23-h2/tiny10%20x64%2023h2.iso"     -o ./data/tiny10.iso
+fi
+
+echo "4. Checking available disk space..."
 df -h /workspaces
 
-echo "5. Launching Windows 10 (Tiny10 lightweight)..."
+echo "5. Starting Windows container..."
 docker compose up -d
 
 echo "=========================================================="
-echo "Windows 10 is running and installing automatically!"
+echo "Windows 10 is booting and installing automatically!"
 echo "Open in your browser at:"
-echo "https://effective-dollop-56qxv6x5x69f46v9-8006.app.github.dev/"
+echo "👉 https://effective-dollop-56qxv6x5x69f46v9-8006.app.github.dev/"
 echo "=========================================================="
-echo "Showing live logs (press Ctrl+C anytime to exit log view):"
+echo "Live logs (press Ctrl+C anytime to detach):"
 
 docker logs -f windows10
