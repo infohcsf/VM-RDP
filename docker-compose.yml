@@ -9,10 +9,6 @@ services:
       - /dev/kvm
     cap_add:
       - NET_ADMIN
-    dns:
-      - 168.63.129.16
-      - 1.1.1.1
-      - 8.8.8.8
     environment:
       VERSION: "tiny10"
       RAM_SIZE: "4G"
